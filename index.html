@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Einstellungen speichern</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="container">
+    <h1>Einstellungen</h1>
+
+    <!-- Gruppe 1: Audio -->
+    <fieldset>
+        <legend>Audio Einstellungen</legend>
+        <label for="volume">Lautstärke:</label>
+        <input type="range" id="volume" min="0" max="100">
+        <span id="volume-value">50</span>
+    </fieldset>
+
+    <!-- Gruppe 2: Anzeige -->
+    <fieldset>
+        <legend>Anzeige Einstellungen</legend>
+        <label for="theme">Thema:</label>
+        <select id="theme">
+            <option value="light">Hell</option>
+            <option value="dark">Dunkel</option>
+        </select>
+    </fieldset>
+
+    <!-- Gruppe 3: Sprache -->
+    <fieldset>
+        <legend>Spracheinstellungen</legend>
+        <label for="language">Sprache:</label>
+        <select id="language">
+            <option value="de">Deutsch</option>
+            <option value="en">Englisch</option>
+        </select>
+    </fieldset>
+
+    <div class="buttons">
+        <button id="save">Einstellungen speichern</button>
+        <button id="reset">Zurücksetzen</button>
+    </div>
+</div>
+
+<script src="settings.js"></script>
+</body>
+</html>
