@@ -1,4 +1,3 @@
-// Standard-Einstellungen
 const defaultSettings = {
     audio: {
         volume: 50,
@@ -11,24 +10,20 @@ const defaultSettings = {
     },
 };
 
-// Einstellungen laden
 function loadSettings() {
     const savedSettings = localStorage.getItem("settings");
     return savedSettings ? JSON.parse(savedSettings) : defaultSettings;
 }
 
-// Einstellungen speichern
 function saveSettings(settings) {
     localStorage.setItem("settings", JSON.stringify(settings));
 }
 
-// Einstellungen anwenden
 function applySettings(settings) {
     // Lautstärke
     document.getElementById("volume").value = settings.audio.volume;
     document.getElementById("volume-value").textContent = settings.audio.volume;
 
-    // Thema
     document.body.style.setProperty(
         "--bg-color",
         settings.display.theme === "dark" ? "#333" : "#f5f5f5"
@@ -43,7 +38,6 @@ function applySettings(settings) {
     );
     document.getElementById("theme").value = settings.display.theme;
 
-    // Sprache
     const languageText = {
         de: "Hallo! Willkommen.",
         en: "Hello! Welcome.",
@@ -52,7 +46,6 @@ function applySettings(settings) {
     document.getElementById("language").value = settings.language.language;
 }
 
-// Einstellungen von der UI abrufen
 function getSettingsFromUI() {
     return {
         audio: {
@@ -67,7 +60,6 @@ function getSettingsFromUI() {
     };
 }
 
-// Event-Listener
 document.getElementById("save").addEventListener("click", () => {
     const newSettings = getSettingsFromUI();
     saveSettings(newSettings);
@@ -81,12 +73,10 @@ document.getElementById("reset").addEventListener("click", () => {
     alert("Einstellungen zurückgesetzt!");
 });
 
-// Lautstärke-Wert aktualisieren
 document.getElementById("volume").addEventListener("input", (e) => {
     document.getElementById("volume-value").textContent = e.target.value;
 });
 
-// Anwendung starten
 document.addEventListener("DOMContentLoaded", () => {
     const settings = loadSettings();
     applySettings(settings);
