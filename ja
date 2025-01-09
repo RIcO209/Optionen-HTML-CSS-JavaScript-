@@ -1,0 +1,197 @@
+const grid = document.getElementById('game-grid');
+const scoreDisplay = document.getElementById('score');
+const rankingList = document.getElementById('ranking-list');
+const rows = 20;
+const cols = 10;
+let score = 0;
+
+// Spielfeld erstellen
+const cells = [];
+for (let r = 0; r < rows; r++) {
+  for (let c = 0; c < cols; c++) {
+    const cell = document.createElement('div');
+    grid.appendChild(cell);
+    cells.push(cell);
+  }
+}
+
+// Formen für Tetriminos (inkl. Rotationen)
+const shapes = [
+  // L-Form
+  [
+    [1, cols + 1, cols * 2 + 1, 2],
+    [cols, cols + 1, cols + 2, cols * 2 + 2],
+    [1, cols + 1, cols * 2 + 1, cols * 2],
+    [cols, cols * 2, cols * 2 + 1, cols * 2 + 2],
+  ],
+  // Quadrat
+  [[0, 1, cols, cols + 1]],
+  // T-Form
+  [
+    [1, cols, cols + 1, cols + 2],
+    [1, cols + 1, cols + 2, cols * 2 + 1],
+    [cols, cols + 1, cols + 2, cols * 2 + 1],
+    [1, cols, cols + 1, cols * 2 + 1],
+  ],
+  // Z-Form
+  [
+    [0, 1, cols + 1, cols + 2],
+    [1, cols, cols + 1, cols * 2],
+  ],
+  // I-Form
+  [
+    [1, cols + 1, cols * 2 + 1, cols * 3 + 1],
+    [cols, cols + 1, cols + 2, cols + 3],
+  ],
+];
+
+let currentPosition = 4;
+let currentRotation = 0;
+let currentShapeIndex = Math.floor(Math.random() * shapes.length);
+let currentShape = shapes[currentShapeIndex][currentRotation];
+
+// Rangliste laden
+let rankings = JSON.parse(localStorage.getItem('rankings')) || [];
+
+// Rangliste aktualisieren
+function updateRankings() {
+  rankingList.innerHTML = '';
+  rankings.forEach(entry => {
+    const li = document.createElement('li');
+    li.textContent = `${entry.name}: ${entry.score}`;
+    rankingList.appendChild(li);
+  });
+}
+
+// Zeichnen des aktuellen Tetriminos
+function draw() {
+  currentShape.forEach(index => {
+    cells[currentPosition + index].classList.add('active');
+    cells[currentPosition + index].style.background = '#f39c12';
+  });
+}
+
+// Entfernen des aktuellen Tetriminos
+function undraw() {
+  currentShape.forEach(index => {
+    cells[currentPosition + index].classList.remove('active');
+    cells[currentPosition + index].style.background = '#444';
+  });
+}
+
+// Bewegen nach unten
+function moveDown() {
+  undraw();
+  currentPosition += cols;
+  draw();
+  freeze();
+}
+
+// Blöcke fixieren
+function freeze() {
+  if (currentShape.some(index => 
+    currentPosition + index + cols >= rows * cols || 
+    cells[currentPosition + index + cols].classList.contains('taken')
+  )) {
+    currentShape.forEach(index => cells[currentPosition + index].classList.add('taken'));
+    createNewTetrimino();
+    checkRows();
+    if (currentShape.some(index => cells[currentPosition + index].classList.contains('taken'))) {
+      gameOver();
+    }
+  }
+}
+
+// Erzeugen eines neuen Tetriminos
+function createNewTetrimino() {
+  currentPosition = 4;
+  currentRotation = 0;
+  currentShapeIndex = Math.floor(Math.random() * shapes.length);
+  currentShape = shapes[currentShapeIndex][currentRotation];
+  draw();
+}
+
+// Reihen prüfen und löschen
+function checkRows() {
+  let rowsCleared = 0;
+  for (let r = 0; r < rows; r++) {
+    const row = Array.from({ length: cols }, (_, i) => r * cols + i);
+    if (row.every(index => cells[index].classList.contains('taken'))) {
+      row.forEach(index => {
+        cells[index].classList.remove('taken', 'active');
+        cells[index].style.background = '#444';
+      });
+      const removed = cells.splice(r * cols, cols);
+      grid.prepend(...removed);
+      rowsCleared++;
+    }
+  }
+  if (rowsCleared > 0) {
+    score += rowsCleared * 10 + (rowsCleared - 1) * 5; // Bonus für Combos
+    scoreDisplay.textContent = `Score: ${score}`;
+  }
+}
+
+// Steuerung
+function control(e) {
+  if (e.key === 'ArrowLeft') moveLeft();
+  if (e.key === 'ArrowRight') moveRight();
+  if (e.key === 'ArrowDown') moveDown();
+  if (e.key === 'r' || e.key === 'R') rotate();
+}
+
+// Nach links bewegen
+function moveLeft() {
+  undraw();
+  if (!currentShape.some(index => (currentPosition + index) % cols === 0)) {
+    currentPosition -= 1;
+  }
+  if (currentShape.some(index => cells[currentPosition + index].classList.contains('taken'))) {
+    currentPosition += 1;
+  }
+  draw();
+}
+
+// Nach rechts bewegen
+function moveRight() {
+  undraw();
+  if (!currentShape.some(index => (currentPosition + index) % cols === cols - 1)) {
+    currentPosition += 1;
+  }
+  if (currentShape.some(index => cells[currentPosition + index].classList.contains('taken'))) {
+    currentPosition -= 1;
+  }
+  draw();
+}
+
+// Tetrimino rotieren
+function rotate() {
+  undraw();
+  currentRotation = (currentRotation + 1) % shapes[currentShapeIndex].length;
+  currentShape = shapes[currentShapeIndex][currentRotation];
+  if (currentShape.some(index => cells[currentPosition + index]?.classList.contains('taken') || 
+    (currentPosition + index) % cols === cols - 1 || 
+    (currentPosition + index) % cols === 0)) {
+    currentRotation = (currentRotation - 1 + shapes[currentShapeIndex].length) % shapes[currentShapeIndex].length;
+    currentShape = shapes[currentShapeIndex][currentRotation];
+  }
+  draw();
+}
+
+// Spiel beenden
+function gameOver() {
+  clearInterval(gameInterval);
+  const name = prompt('Game Over! Gib deinen Namen ein:');
+  if (name) {
+    rankings.push({ name, score });
+    rankings.sort((a, b) => b.score - a.score);
+    localStorage.setItem('rankings', JSON.stringify(rankings));
+    updateRankings();
+  }
+  alert('Drücke F5, um neu zu starten.');
+}
+
+document.addEventListener('keydown', control);
+draw();
+const gameInterval = setInterval(moveDown, 1000);
+updateRankings();
