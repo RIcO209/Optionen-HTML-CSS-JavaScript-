@@ -1,0 +1,47 @@
+body {
+  font-family: Arial, sans-serif;
+  text-align: center;
+  background-color: #f0f0f0;
+  margin: 0;
+  padding: 0;
+}
+
+.container {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.game-container {
+  background: #333;
+  padding: 10px;
+}
+
+.ranking-container {
+  background: #fff;
+  border: 1px solid #ccc;
+  padding: 10px;
+  width: 200px;
+  height: 600px;
+  overflow-y: auto;
+}
+
+#game-grid {
+  display: grid;
+  grid-template-columns: repeat(10, 30px);
+  grid-template-rows: repeat(20, 30px);
+  gap: 1px;
+  background: #000;
+}
+
+#game-grid div {
+  width: 30px;
+  height: 30px;
+  background: #444;
+}
+
+#score {
+  font-size: 20px;
+  margin-top: 10px;
+}
