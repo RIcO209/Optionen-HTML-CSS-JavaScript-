@@ -1,0 +1,26 @@
+function freeze() {
+  // Überprüfen, ob der Tetrimino am Boden ist oder auf einen anderen Block trifft
+  if (currentShape.some(index => 
+    currentPosition + index + cols >= rows * cols || 
+    cells[currentPosition + index + cols].classList.contains('taken')
+  )) {
+    // Markiere die aktuelle Form als "fixiert"
+    currentShape.forEach(index => cells[currentPosition + index].classList.add('taken'));
+    
+    // Erzeuge einen neuen Tetrimino
+    currentShape = shapes[Math.floor(Math.random() * shapes.length)];
+    currentPosition = 4;
+    
+    // Zeichne den neuen Tetrimino
+    draw();
+    
+    // Überprüfe, ob Reihen vollständig sind
+    checkRow();
+    
+    // Game Over überprüfen
+    if (currentShape.some(index => cells[currentPosition + index].classList.contains('taken'))) {
+      alert('Game Over!');
+      clearInterval(gameInterval);
+    }
+  }
+}
