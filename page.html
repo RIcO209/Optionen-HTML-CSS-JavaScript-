@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Andere Seite</title>
+    <link rel="stylesheet" href="styles.css">
+    <script type="module" src="settings-module.js"></script>
+    <script type="module">
+        import { initializeSettings } from './settings-module.js';
+        // Einstellungen anwenden
+        document.addEventListener('DOMContentLoaded', initializeSettings);
+    </script>
+</head>
+<body>
+    <div class="container">
+        <h1>Andere Seite</h1>
+        <p>Die Einstellungen von der Hauptseite werden hier angewendet.</p>
+
+        <!-- Beispiel: Audio -->
+        <audio controls>
+            <source src="example.mp3" type="audio/mp3">
+            Dein Browser unterstützt dieses Audioelement nicht.
+        </audio>
+    </div>
+</body>
+</html>
