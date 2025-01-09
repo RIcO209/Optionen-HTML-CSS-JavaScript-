@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tetris-Spiel mit Rangliste</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h1>Tetris-Spiel</h1>
+  <div class="container">
+    <div class="game-container">
+      <div id="game-grid"></div>
+    </div>
+    <div class="ranking-container">
+      <h2>Rangliste</h2>
+      <ul id="ranking-list"></ul>
+    </div>
+  </div>
+  <p id="score">Score: 0</p>
+  <script src="script.js"></script>
+</body>
+</html>
