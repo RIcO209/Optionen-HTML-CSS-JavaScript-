@@ -1,0 +1,7 @@
+.hidden {
+  display: none;
+}
+
+#game-over-screen {
+  margin-top: 20px;
+}

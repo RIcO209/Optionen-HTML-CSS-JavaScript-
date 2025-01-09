@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rangliste</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h1>Rangliste</h1>
+  <ul id="leaderboard"></ul>
+  <a href="index.html">Zurück zum Spiel</a>
+  <script>
+    // Rangliste laden und anzeigen
+    const leaderboard = JSON.parse(localStorage.getItem('leaderboard')) || [];
+    const leaderboardList = document.getElementById('leaderboard');
+    leaderboard.sort((a, b) => b.score - a.score); // Sortiere nach Punktzahl absteigend
+    leaderboard.forEach(entry => {
+      const li = document.createElement('li');
+      li.textContent = `${entry.name}: ${entry.score}`;
+      leaderboardList.appendChild(li);
+    });
+  </script>
+</body>
+</html>
