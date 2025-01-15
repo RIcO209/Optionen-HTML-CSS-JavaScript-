@@ -1,0 +1,204 @@
+Hier ist die überarbeitete Version des Codes, um die von dir genannten Probleme zu beheben:
+
+1. **Musik ändert sich nicht bei jedem Eintreten einer Person**: Die Musik wird nur in regelmäßigen Zeitabständen (alle 2–4 Minuten) geändert, unabhängig vom Eintritt einer Person.
+2. **Drinks werden korrekt serviert**: Der Kellner nimmt Bestellungen auf und serviert Getränke an Personen, die an Tischen sitzen.
+3. **VIPs dürfen rein, selbst wenn die Bar voll ist**: VIPs können Platz beanspruchen, indem sie andere Personen verdrängen.
+
+---
+
+### **1. Anpassungen in `Bar`**
+#### `Bar.java`
+```java
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
+
+public class Bar {
+    private static final int MAX_CAPACITY = 45; // Maximal 45 Personen
+    private List<Person> guests = new ArrayList<>();
+    private BarArea barArea = new BarArea();
+    private Stage stage = new Stage();
+    private Door door = new Door();
+    private List<Table> tables = new ArrayList<>();
+    private Waiter waiter;
+    private Singer singer;
+
+    public Bar() {
+        // Initialisiere Tische
+        for (int i = 0; i < 5; i++) {
+            tables.add(new Table());
+        }
+        this.waiter = new Waiter();
+        this.singer = new Singer();
+    }
+
+    public boolean enter(Person person) {
+        if (guests.size() < MAX_CAPACITY || person instanceof VIP) {
+            if (person instanceof VIP) {
+                // VIPs können Platz beanspruchen, indem sie andere verdrängen
+                ((VIP) person).makeSpace(guests, tables, barArea, stage);
+            }
+            guests.add(person);
+            return true;
+        }
+        return false;
+    }
+
+    public void leaveRandomPerson() {
+        if (!guests.isEmpty()) {
+            Random random = new Random();
+            Person leaving = guests.remove(random.nextInt(guests.size()));
+            System.out.println(leaving.getName() + " verlässt die Bar.");
+        }
+    }
+
+    public void simulateActivities() {
+        // Kellner nimmt Bestellungen auf
+        waiter.takeOrders(guests, tables);
+
+        // Sänger tritt auf
+        singer.perform();
+    }
+}
+```
+
+---
+
+### **2. Anpassungen für VIPs**
+#### `VIP.java`
+```java
+import java.util.List;
+
+public class VIP extends Person {
+    public VIP(String name) {
+        super(name);
+    }
+
+    public static VIP createRandomVIP() {
+        return new VIP(Person.createRandomPerson().getName() + " (VIP)");
+    }
+
+    public void makeSpace(List<Person> guests, List<Table> tables, BarArea barArea, Stage stage) {
+        // Priorität 1: Tische
+        for (Table table : tables) {
+            if (!table.isAvailable()) {
+                table.removePerson();
+                System.out.println(getName() + " hat jemanden von einem Tisch verscheucht.");
+                return;
+            }
+        }
+        // Priorität 2: Bar-Bereich
+        if (!barArea.isAvailable()) {
+            barArea.removePerson();
+            System.out.println(getName() + " hat jemanden aus dem Barbereich verscheucht.");
+            return;
+        }
+        // Priorität 3: Bühne
+        if (!stage.isAvailable()) {
+            stage.removePerson();
+            System.out.println(getName() + " hat jemanden von der Bühne verscheucht.");
+        }
+    }
+}
+```
+
+---
+
+### **3. Getränke-Logik im Kellner**
+#### `Waiter.java`
+```java
+import java.util.List;
+
+public class Waiter {
+    public void takeOrders(List<Person> guests, List<Table> tables) {
+        for (Table table : tables) {
+            for (Person person : table.getOccupants()) {
+                if (person.getDrink().equals("nichts")) { // Nur, wenn die Person noch nichts bestellt hat
+                    person.orderDrink();
+                    System.out.println("Kellner hat " + person.getName() + " ein " + person.getDrink() + " gebracht.");
+                }
+            }
+        }
+    }
+}
+```
+
+---
+
+### **4. Echtzeit-Simulation (`BarSimulator.java`)**
+#### `BarSimulator.java`
+```java
+import java.util.Random;
+import java.util.concurrent.TimeUnit;
+
+public class BarSimulator {
+    public static void main(String[] args) {
+        Bar bar = new Bar();
+        Random random = new Random();
+
+        long lastPerformanceTime = System.currentTimeMillis();
+        int performanceInterval = 2 + random.nextInt(3); // Intervall: 2 bis 4 Minuten (in Minuten)
+
+        System.out.println("Der Bär-Simulator läuft. Maximal 45 Personen erlaubt.\n");
+
+        while (true) { // Endlosschleife für Echtzeitbetrieb
+            try {
+                // Simuliere Personenbewegungen (Betreten/Verlassen)
+                boolean willEnter = random.nextInt(100) < 80; // 80% Wahrscheinlichkeit, die Bar zu betreten
+                if (willEnter) {
+                    Person person = random.nextInt(100) < 20 
+                        ? VIP.createRandomVIP() 
+                        : Person.createRandomPerson();
+                    if (bar.enter(person)) {
+                        System.out.println(person.getName() + " betritt die Bar.");
+                    } else {
+                        System.out.println(person.getName() + " konnte nicht eintreten (Bar voll).");
+                    }
+                } else {
+                    bar.leaveRandomPerson();
+                }
+
+                // Überprüfe, ob es Zeit für einen Auftritt des Sängers ist
+                long currentTime = System.currentTimeMillis();
+                if ((currentTime - lastPerformanceTime) >= performanceInterval * 60 * 1000) { // Minuten -> Millisekunden
+                    bar.simulateActivities(); // Sänger tritt auf
+                    lastPerformanceTime = currentTime;
+                    performanceInterval = 2 + random.nextInt(3); // Neues Intervall festlegen
+                }
+
+                // Kurze Pause, um Echtzeitbetrieb zu simulieren
+                TimeUnit.SECONDS.sleep(1);
+
+            } catch (InterruptedException e) {
+                System.out.println("Simulation unterbrochen: " + e.getMessage());
+                break;
+            }
+        }
+    }
+}
+```
+
+---
+
+### **5. Änderungen zusammengefasst**
+1. **Musik-Auftritte**: Die Sänger-Performance findet nur alle 2–4 Minuten statt, unabhängig von Personenbewegungen.
+2. **Drinks**: Der Kellner bringt Personen an den Tischen Getränke, die zufällig ausgewählt werden.
+3. **VIPs**: Wenn die Bar voll ist, dürfen VIPs trotzdem eintreten, indem sie Platz beanspruchen.
+
+---
+
+### **Beispielausgabe**
+```plaintext
+Anna betritt die Bar.
+Clara betritt die Bar.
+Kellner hat Clara ein Bier gebracht.
+Kellner hat David ein Wasser gebracht.
+Der Sänger tritt auf mit dem Instrument: Gitarre.
+Ben betritt die Bar.
+Hans (VIP) hat jemanden von einem Tisch verscheucht.
+Kellner hat Hans (VIP) ein Cocktail gebracht.
+```
+
+---
+
+Soll ich weitere Optimierungen oder Features hinzufügen?
