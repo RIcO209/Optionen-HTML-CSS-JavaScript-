@@ -1,0 +1,169 @@
+Hier ist eine grundlegende Struktur für deinen **Bär-Simulator**. Ich werde den Code in separate Java-Dateien unterteilen, um die geforderten Funktionen (Orte, Personen, Kellner, Sänger) zu implementieren.
+
+### **1. Hauptprogramm (`BarSimulator.java`)**
+```java
+import java.util.ArrayList;
+import java.util.Random;
+
+public class BarSimulator {
+    public static void main(String[] args) {
+        Bar bar = new Bar();
+        Random random = new Random();
+
+        // Simulation: Personen betreten oder verlassen die Bar
+        for (int i = 0; i < 50; i++) { // 50 Runden der Simulation
+            boolean willEnter = random.nextInt(100) < 80; // 80% Wahrscheinlichkeit, die Bar zu betreten
+            if (willEnter) {
+                Person person = new Person("Person" + (i + 1));
+                if (bar.enter(person)) {
+                    System.out.println(person.getName() + " betritt die Bar.");
+                } else {
+                    System.out.println(person.getName() + " konnte nicht eintreten (Bar voll).");
+                }
+            } else {
+                bar.leaveRandomPerson();
+            }
+            bar.simulateActivities(); // Kellner und Sänger führen Aktionen aus
+        }
+    }
+}
+```
+
+---
+
+### **2. Die Bar (`Bar.java`)**
+```java
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
+
+public class Bar {
+    private static final int MAX_CAPACITY = 20; // Maximal 20 Personen
+    private List<Person> guests = new ArrayList<>();
+    private List<Table> tables = new ArrayList<>();
+    private Waiter waiter;
+    private Singer singer;
+
+    public Bar() {
+        // Initialisiere Tische
+        for (int i = 0; i < 5; i++) { // 5 Tische
+            tables.add(new Table());
+        }
+        this.waiter = new Waiter();
+        this.singer = new Singer();
+    }
+
+    public boolean enter(Person person) {
+        if (guests.size() < MAX_CAPACITY) {
+            guests.add(person);
+            return true;
+        }
+        return false;
+    }
+
+    public void leaveRandomPerson() {
+        if (!guests.isEmpty()) {
+            Random random = new Random();
+            Person leaving = guests.remove(random.nextInt(guests.size()));
+            System.out.println(leaving.getName() + " verlässt die Bar.");
+        }
+    }
+
+    public void simulateActivities() {
+        waiter.takeOrders(guests, tables);
+        singer.perform();
+    }
+}
+```
+
+---
+
+### **3. Die Personen (`Person.java`)**
+```java
+public class Person {
+    private String name;
+
+    public Person(String name) {
+        this.name = name;
+    }
+
+    public String getName() {
+        return name;
+    }
+}
+```
+
+---
+
+### **4. Die Tische (`Table.java`)**
+```java
+import java.util.ArrayList;
+import java.util.List;
+
+public class Table {
+    private static final int MAX_SEATS = 4;
+    private List<Person> occupants = new ArrayList<>();
+
+    public boolean addPerson(Person person) {
+        if (occupants.size() < MAX_SEATS) {
+            occupants.add(person);
+            return true;
+        }
+        return false;
+    }
+
+    public void clearTable() {
+        occupants.clear();
+    }
+
+    public boolean isAvailable() {
+        return occupants.size() < MAX_SEATS;
+    }
+}
+```
+
+---
+
+### **5. Der Kellner (`Waiter.java`)**
+```java
+import java.util.List;
+
+public class Waiter {
+    public void takeOrders(List<Person> guests, List<Table> tables) {
+        for (Table table : tables) {
+            if (!table.isAvailable()) {
+                System.out.println("Kellner nimmt eine Bestellung am Tisch auf.");
+            }
+        }
+    }
+}
+```
+
+---
+
+### **6. Der Sänger (`Singer.java`)**
+```java
+import java.util.Random;
+
+public class Singer {
+    private static final String[] INSTRUMENTS = {"Gitarre", "Klavier", "Schlagzeug"};
+    private Random random = new Random();
+
+    public void perform() {
+        String instrument = INSTRUMENTS[random.nextInt(INSTRUMENTS.length)];
+        System.out.println("Der Sänger tritt auf mit dem Instrument: " + instrument);
+    }
+}
+```
+
+---
+
+### **Funktionsweise**
+1. Das Hauptprogramm `BarSimulator` steuert die Simulation.
+2. Personen versuchen, die Bar zu betreten oder zu verlassen.
+3. Der Kellner läuft durch die Bar und bedient besetzte Tische.
+4. Der Sänger tritt mit einem zufälligen Instrument auf der Bühne auf.
+
+---
+
+Falls du Erweiterungen oder spezifische Änderungen möchtest (z. B. zusätzliche Funktionen für Gäste, detailliertere Simulationen), lass es mich wissen!
