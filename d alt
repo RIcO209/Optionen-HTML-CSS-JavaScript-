@@ -1,0 +1,300 @@
+Hier ist der aktualisierte Code für den **Bär-Simulator**, mit den folgenden Ergänzungen:
+
+1. **VIP-Funktion**: VIPs können andere Personen aus einem vollen Ort (z. B. Tisch, Bar) verscheuchen, um Platz für sich zu machen.
+2. **Separate Klassen für jeden Ort**: Es gibt eigene Klassen für Bühne, Bar, Tische und Tür.
+3. **Personen mit Namen**: Namen können bei der Erstellung einer Person angegeben werden.
+
+---
+
+### **1. Hauptprogramm (`BarSimulator.java`)**
+```java
+import java.util.Random;
+
+public class BarSimulator {
+    public static void main(String[] args) {
+        Bar bar = new Bar();
+        Random random = new Random();
+
+        // Simulation: Personen betreten oder verlassen die Bar
+        for (int i = 0; i < 50; i++) { // 50 Runden der Simulation
+            boolean willEnter = random.nextInt(100) < 80; // 80% Wahrscheinlichkeit, die Bar zu betreten
+            String name = "Person" + (i + 1);
+            if (willEnter) {
+                Person person = random.nextInt(100) < 20 ? new VIP(name) : new Person(name); // 20% sind VIPs
+                if (bar.enter(person)) {
+                    System.out.println(person.getName() + " betritt die Bar.");
+                } else {
+                    System.out.println(person.getName() + " konnte nicht eintreten (Bar voll).");
+                }
+            } else {
+                bar.leaveRandomPerson();
+            }
+            bar.simulateActivities(); // Simulation: Kellner und Sänger führen Aktionen aus
+        }
+    }
+}
+```
+
+---
+
+### **2. Die Bar (`Bar.java`)**
+```java
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
+
+public class Bar {
+    private static final int MAX_CAPACITY = 20; // Maximal 20 Personen
+    private List<Person> guests = new ArrayList<>();
+    private BarArea barArea = new BarArea();
+    private Stage stage = new Stage();
+    private Door door = new Door();
+    private List<Table> tables = new ArrayList<>();
+    private Waiter waiter;
+    private Singer singer;
+
+    public Bar() {
+        // Initialisiere Tische
+        for (int i = 0; i < 5; i++) {
+            tables.add(new Table());
+        }
+        this.waiter = new Waiter();
+        this.singer = new Singer();
+    }
+
+    public boolean enter(Person person) {
+        if (guests.size() < MAX_CAPACITY) {
+            if (person instanceof VIP) {
+                ((VIP) person).makeSpace(guests, tables, barArea, stage);
+            }
+            guests.add(person);
+            return true;
+        }
+        return false;
+    }
+
+    public void leaveRandomPerson() {
+        if (!guests.isEmpty()) {
+            Random random = new Random();
+            Person leaving = guests.remove(random.nextInt(guests.size()));
+            System.out.println(leaving.getName() + " verlässt die Bar.");
+        }
+    }
+
+    public void simulateActivities() {
+        waiter.takeOrders(guests, tables);
+        singer.perform();
+    }
+}
+```
+
+---
+
+### **3. Personen (`Person.java` und `VIP.java`)**
+#### `Person.java`
+```java
+public class Person {
+    private String name;
+
+    public Person(String name) {
+        this.name = name;
+    }
+
+    public String getName() {
+        return name;
+    }
+}
+```
+
+#### `VIP.java`
+```java
+import java.util.List;
+
+public class VIP extends Person {
+    public VIP(String name) {
+        super(name);
+    }
+
+    public void makeSpace(List<Person> guests, List<Table> tables, BarArea barArea, Stage stage) {
+        // Priorität 1: Tische
+        for (Table table : tables) {
+            if (!table.isAvailable()) {
+                table.removePerson();
+                System.out.println(getName() + " hat jemanden von einem Tisch verscheucht.");
+                return;
+            }
+        }
+        // Priorität 2: Bar-Bereich
+        if (!barArea.isAvailable()) {
+            barArea.removePerson();
+            System.out.println(getName() + " hat jemanden aus dem Barbereich verscheucht.");
+            return;
+        }
+        // Priorität 3: Bühne
+        if (!stage.isAvailable()) {
+            stage.removePerson();
+            System.out.println(getName() + " hat jemanden von der Bühne verscheucht.");
+        }
+    }
+}
+```
+
+---
+
+### **4. Orte**
+#### **Bar-Bereich (`BarArea.java`)**
+```java
+import java.util.ArrayList;
+import java.util.List;
+
+public class BarArea {
+    private static final int MAX_CAPACITY = 10;
+    private List<Person> people = new ArrayList<>();
+
+    public boolean addPerson(Person person) {
+        if (people.size() < MAX_CAPACITY) {
+            people.add(person);
+            return true;
+        }
+        return false;
+    }
+
+    public void removePerson() {
+        if (!people.isEmpty()) {
+            people.remove(0); // Entferne die erste Person
+        }
+    }
+
+    public boolean isAvailable() {
+        return people.size() < MAX_CAPACITY;
+    }
+}
+```
+
+#### **Bühne (`Stage.java`)**
+```java
+import java.util.ArrayList;
+import java.util.List;
+
+public class Stage {
+    private static final int MAX_CAPACITY = 2;
+    private List<Person> performers = new ArrayList<>();
+
+    public boolean addPerson(Person person) {
+        if (performers.size() < MAX_CAPACITY) {
+            performers.add(person);
+            return true;
+        }
+        return false;
+    }
+
+    public void removePerson() {
+        if (!performers.isEmpty()) {
+            performers.remove(0);
+        }
+    }
+
+    public boolean isAvailable() {
+        return performers.size() < MAX_CAPACITY;
+    }
+}
+```
+
+#### **Tür (`Door.java`)**
+```java
+public class Door {
+    private static final int MAX_CAPACITY = 5;
+    private int waiting = 0;
+
+    public void addWaitingPerson() {
+        if (waiting < MAX_CAPACITY) {
+            waiting++;
+        }
+    }
+
+    public void removeWaitingPerson() {
+        if (waiting > 0) {
+            waiting--;
+        }
+    }
+
+    public boolean hasSpace() {
+        return waiting < MAX_CAPACITY;
+    }
+}
+```
+
+#### **Tische (`Table.java`)**
+```java
+import java.util.ArrayList;
+import java.util.List;
+
+public class Table {
+    private static final int MAX_SEATS = 4;
+    private List<Person> occupants = new ArrayList<>();
+
+    public boolean addPerson(Person person) {
+        if (occupants.size() < MAX_SEATS) {
+            occupants.add(person);
+            return true;
+        }
+        return false;
+    }
+
+    public void removePerson() {
+        if (!occupants.isEmpty()) {
+            occupants.remove(0); // Entferne die erste Person
+        }
+    }
+
+    public void clearTable() {
+        occupants.clear();
+    }
+
+    public boolean isAvailable() {
+        return occupants.size() < MAX_SEATS;
+    }
+}
+```
+
+---
+
+### **5. Kellner und Sänger**
+#### **Kellner (`Waiter.java`)**
+```java
+import java.util.List;
+
+public class Waiter {
+    public void takeOrders(List<Person> guests, List<Table> tables) {
+        for (Table table : tables) {
+            if (!table.isAvailable()) {
+                System.out.println("Kellner nimmt eine Bestellung am Tisch auf.");
+            }
+        }
+    }
+}
+```
+
+#### **Sänger (`Singer.java`)**
+```java
+import java.util.Random;
+
+public class Singer {
+    private static final String[] INSTRUMENTS = {"Gitarre", "Klavier", "Schlagzeug"};
+    private Random random = new Random();
+
+    public void perform() {
+        String instrument = INSTRUMENTS[random.nextInt(INSTRUMENTS.length)];
+        System.out.println("Der Sänger tritt auf mit dem Instrument: " + instrument);
+    }
+}
+```
+
+---
+
+### **Funktionsweise**
+1. **VIPs** können andere Personen aus den Orten verscheuchen.
+2. Jeder Ort hat eigene Klassen, die Kapazitäten und Personen verwalten.
+3. Gäste und VIPs betreten und verlassen die Bar; Kellner und Sänger führen Aktionen aus.
+
+Lass mich wissen, wenn du weitere Erweiterungen möchtest!
