@@ -1,0 +1,57 @@
+Um sicherzustellen, dass Klassen wie `List`, `Arrays`, und `Random` erkannt werden, musst du die entsprechenden Pakete importieren. Hier ist die aktualisierte Version von **`Person.java`**, die die notwendigen `import`-Anweisungen enthält:
+
+---
+
+### **Aktualisierte `Person.java`**
+```java
+import java.util.Arrays;
+import java.util.List;
+import java.util.Random;
+
+public class Person {
+    private String name;
+    private Drink drink; // Getränk der Person
+
+    // Liste vorgefertigter Namen
+    private static final List<String> NAMES = Arrays.asList(
+        "Anna", "Ben", "Clara", "David", "Elisa",
+        "Felix", "Gina", "Hans", "Iris", "Jonas"
+    );
+
+    public Person(String name) {
+        this.name = name;
+    }
+
+    public static Person createRandomPerson() {
+        Random random = new Random();
+        String name = NAMES.get(random.nextInt(NAMES.size()));
+        return new Person(name);
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void orderDrink() {
+        this.drink = Drink.randomDrink();
+    }
+
+    public String getDrink() {
+        return drink != null ? drink.getName() : "nichts";
+    }
+}
+```
+
+---
+
+### **Wichtige Änderungen**
+1. **Fehlende Imports hinzugefügt**:
+   - `import java.util.Arrays;`: Für die Methode `Arrays.asList()`, die die Liste der Namen erstellt.
+   - `import java.util.List;`: Für die Verwendung von `List` als Datentyp.
+   - `import java.util.Random;`: Für die zufällige Auswahl eines Namens.
+2. Der Rest des Codes bleibt gleich und funktioniert nun problemlos.
+
+---
+
+### **Hinweis**
+Stelle sicher, dass du den Compiler verwendest, der mit diesen Standardbibliotheken umgehen kann, z. B. den Java Development Kit (JDK). Falls du weitere Abhängigkeiten benötigst, lass es mich wissen!
